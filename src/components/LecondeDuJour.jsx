@@ -1,17 +1,13 @@
 import { useState } from 'react';
-import { programme, themesParJour } from '../data/programme';
+import { programme } from '../data/programme';
 import TexteInteractif from './TexteInteractif';
 
 export default function LecondeDuJour({ progression, completerLecon, vocabulaire }) {
   const jourActuel = Math.min(progression.jourActuel || 1, 90);
   const leconComplete = programme.find(l => l.jour === jourActuel);
-  const themeSimple = themesParJour[jourActuel];
 
   if (leconComplete) {
     return <LeconComplete lecon={leconComplete} jourActuel={jourActuel} progression={progression} completerLecon={completerLecon} vocabulaire={vocabulaire} />;
-  }
-  if (themeSimple) {
-    return <LeconSimple theme={themeSimple} jourActuel={jourActuel} progression={progression} completerLecon={completerLecon} />;
   }
   return <LeconGenerique jourActuel={jourActuel} progression={progression} completerLecon={completerLecon} />;
 }
