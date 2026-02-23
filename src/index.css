@@ -1052,3 +1052,90 @@ body {
   .onglet { border-bottom: none; flex: 1; border-top: 2px solid transparent; }
   .onglet.actif { border-top-color: var(--primary); border-bottom: none; }
 }
+
+/* ==================== Session de leçon ==================== */
+
+/* Barre de progression de session */
+.session-barre {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.session-remplie {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.3s var(--ease);
+}
+
+/* Breadcrumb des phases */
+.phases-breadcrumb {
+  display: flex;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--sp-3);
+}
+.phase-item {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.phase-item.actif { color: var(--primary); font-weight: 700; }
+.phase-item.fait { color: var(--success); }
+.phase-separateur { color: var(--border-strong); font-size: var(--text-xs); }
+
+/* Champ lacune (fill-in-blank) */
+.champ-lacune {
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  background: transparent;
+  padding: 2px var(--sp-2);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: var(--text-base);
+  color: var(--text);
+  min-width: 80px;
+  outline: none;
+  text-align: center;
+}
+.champ-lacune:focus { border-bottom-color: var(--accent); }
+.champ-lacune.correct { border-bottom-color: var(--success); color: var(--success); }
+.champ-lacune.incorrect { border-bottom-color: var(--error); color: var(--error); }
+
+/* Jeu de paires (matching) */
+.paires-grille {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+.paire-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Option sélectionnée (avant validation) */
+.quiz-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Dialogue */
+.dialogue-replique {
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+.dialogue-replique:nth-child(even) {
+  background: var(--surface-alt);
+}
+.dialogue-personnage {
+  font-weight: 700;
+  color: var(--primary);
+}

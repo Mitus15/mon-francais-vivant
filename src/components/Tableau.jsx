@@ -81,7 +81,7 @@ export default function Tableau({ progression, pourcentageNiveau, niveauDebloque
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)' }}>
             <div>
               <div className="heading-card" style={{ marginBottom: 'var(--sp-1)' }}>Leçon du jour</div>
-              <div className="text-secondary">Jour {Math.min((progression.leconsFaites?.length || 0) + 1, 90)} sur 90</div>
+              <div className="text-secondary">Jour {Math.min((progression.leconsFaites?.length || 0) + 1, 120)} sur 120</div>
             </div>
             <button className="btn-primaire" style={{ width: 'auto' }} onClick={() => naviguerVers('lecon')}>Commencer →</button>
           </div>
@@ -101,7 +101,7 @@ export default function Tableau({ progression, pourcentageNiveau, niveauDebloque
           </div>
         )}
 
-        {joursFaits >= 90 && (
+        {joursFaits >= 120 && (
           <div className="carte-primary" style={{ textAlign: 'center' }}>
             <div className="heading-section" style={{ color: 'var(--accent)', marginBottom: 'var(--sp-2)' }}>
               Félicitations ! Tu es Francophone !

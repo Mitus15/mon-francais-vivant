@@ -8,7 +8,7 @@ const etatInitial = {
   dernierJourFait: null,
   streak: 0,
   niveauGlobal: 'A1',
-  scores: { A1: 0, A2: 0, B1: 0 },
+  scores: { A1: 0, A2: 0, B1: 0, B2: 0 },
   leconsFaites: [],
   xpTotal: 0,
 };
@@ -75,7 +75,7 @@ export function useProgression() {
 
   function pourcentageNiveau(niveau) {
     const { leconsFaites } = progression;
-    const ranges = { A1: [1, 30], A2: [31, 60], B1: [61, 90] };
+    const ranges = { A1: [1, 30], A2: [31, 60], B1: [61, 90], B2: [91, 120] };
     const [debut, fin] = ranges[niveau] || [1, 30];
     const total = fin - debut + 1;
     const faites = leconsFaites.filter(j => j >= debut && j <= fin).length;
@@ -83,7 +83,7 @@ export function useProgression() {
   }
 
   function niveauDebloque(niveau) {
-    const prerequis = { A1: true, A2: pourcentageNiveau('A1') >= 70, B1: pourcentageNiveau('A2') >= 70 };
+    const prerequis = { A1: true, A2: pourcentageNiveau('A1') >= 70, B1: pourcentageNiveau('A2') >= 70, B2: pourcentageNiveau('B1') >= 70 };
     return prerequis[niveau] ?? false;
   }
 
