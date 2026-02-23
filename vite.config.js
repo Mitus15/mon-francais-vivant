@@ -26,6 +26,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
+            urlPattern: /^https:\/\/monfr-dictionnaire\.maniodubo\.workers\.dev\/.*/,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'dictionnaire-cache', expiration: { maxEntries: 1000, maxAgeSeconds: 7 * 24 * 60 * 60 } },
+          },
+          {
             urlPattern: /^https:\/\/api\.getbible\.net\/.*/,
             handler: 'NetworkFirst',
             options: { cacheName: 'getbible-cache', expiration: { maxEntries: 500, maxAgeSeconds: 30 * 24 * 60 * 60 } },
