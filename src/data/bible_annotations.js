@@ -1,5 +1,5 @@
 // Annotations éditoriales pour les passages clés
-// Le texte français est fourni par bible-api.com (Louis Segond)
+// Le texte français est fourni par api.getbible.net (Louis Segond 1910)
 // Ce fichier contient : grec/hébreu/latin + mots clés + notes littéraires
 
 export const livresCanon = [

@@ -15,8 +15,8 @@ export default defineConfig({
         description: 'Apprends le français en 3 mois — Bible, Théologie, IA',
         start_url: '/',
         display: 'standalone',
-        background_color: '#0a1628',
-        theme_color: '#c9a84c',
+        background_color: '#FAFAF8',
+        theme_color: '#2B4C7E',
         icons: [
           { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -26,9 +26,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/bible-api\.com\/.*/,
+            urlPattern: /^https:\/\/api\.getbible\.net\/.*/,
             handler: 'NetworkFirst',
-            options: { cacheName: 'bible-api-cache', expiration: { maxEntries: 200, maxAgeSeconds: 7 * 24 * 60 * 60 } },
+            options: { cacheName: 'getbible-cache', expiration: { maxEntries: 500, maxAgeSeconds: 30 * 24 * 60 * 60 } },
           },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/,

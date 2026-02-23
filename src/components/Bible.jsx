@@ -42,8 +42,9 @@ export default function Bible({ versets, gemini }) {
     <div>
       <h2 className="section-titre">La Bible en Français</h2>
       <p className="section-intro">
-        Toute la Bible <strong className="text-accent">Louis Segond</strong> via API.
-        Les livres marqués ✦ contiennent des annotations littéraires et étymologiques.
+        Toute la Bible <strong className="text-accent">Louis Segond 1910</strong> avec
+        textes originaux en <strong className="text-accent">grec, hébreu et latin</strong>.
+        Les livres marqués ✦ contiennent des annotations littéraires.
       </p>
 
       <div className="filtres" style={{ marginBottom: 'var(--sp-4)' }}>
@@ -121,22 +122,35 @@ function VueLivre({ livre, saisieChapitre, setSaisieChapitre, ouvrirChapitre, re
 
 function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
   const [languesVisibles, setLanguesVisibles] = useState(false);
+  const [langueActive, setLangueActive] = useState(null); // 'gr', 'heb', 'lat' or null (all)
   const [versetExplique, setVersetExplique] = useState(null);
   const [explicationIA, setExplicationIA] = useState('');
   const [loadingIA, setLoadingIA] = useState(false);
 
+  const estAT = livre.testament === 'AT';
+
+  // Annotations for this chapter
   const annsChap = [];
   annotations.forEach(ann => {
     if ((ann.livre === livre.nom || ann.abrev === livre.abrev) && ann.chapitre === chapitre) annsChap.push(ann);
   });
-
   const annParVerset = {};
   for (const ann of annsChap) {
     const match = ann.ref.match(/:(\d+)/);
     if (match) annParVerset[Number(match[1])] = ann;
   }
-
   const annPrincipale = annsChap[0] || null;
+
+  async function toggleLangues() {
+    if (languesVisibles) {
+      setLanguesVisibles(false);
+      return;
+    }
+    setLanguesVisibles(true);
+    if (!bible.languesOriginales) {
+      await bible.fetchLangues(livre.nom, chapitre);
+    }
+  }
 
   async function expliquerParIA(num, texte) {
     if (!gemini.hasKey) {
@@ -163,6 +177,21 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
     });
   }
 
+  // Get original language verse text for a given verse number
+  function getOriginal(lang, numero) {
+    const langData = bible.languesOriginales?.[lang];
+    if (!langData) return null;
+    const v = langData.find(v => v.numero === numero);
+    return v?.texte || null;
+  }
+
+  const languesDispos = [];
+  if (languesVisibles && bible.languesOriginales) {
+    if (bible.languesOriginales.heb) languesDispos.push({ code: 'heb', label: 'Hébreu', chipClass: 'hebreu' });
+    if (bible.languesOriginales.gr) languesDispos.push({ code: 'gr', label: 'Grec', chipClass: 'grec' });
+    if (bible.languesOriginales.lat) languesDispos.push({ code: 'lat', label: 'Latin', chipClass: 'latin' });
+  }
+
   return (
     <div>
       <button onClick={retour} className="btn-retour">← {livre.nom}</button>
@@ -172,35 +201,26 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
           <h2 className="section-titre" style={{ marginBottom: 2 }}>{livre.nom} {chapitre}</h2>
           {annsChap.length > 0 && <span className="text-meta" style={{ color: 'var(--accent-dark)', fontWeight: 600 }}>✦ Chapitre annoté</span>}
         </div>
-        {annsChap.length > 0 && (
-          <button onClick={() => setLanguesVisibles(!languesVisibles)} className={languesVisibles ? 'btn-ajouter' : 'btn-secondaire'} style={{ fontSize: 'var(--text-xs)' }}>
-            Langues originales
-          </button>
-        )}
+        <button onClick={toggleLangues} className={languesVisibles ? 'btn-ajouter' : 'btn-secondaire'} style={{ fontSize: 'var(--text-xs)' }}>
+          {bible.loadingLangues ? 'Chargement...' : 'Langues originales'}
+        </button>
       </div>
 
+      {/* Language filter chips */}
+      {languesVisibles && languesDispos.length > 0 && (
+        <div className="filtres" style={{ marginBottom: 'var(--sp-3)' }}>
+          <button className={`filtre-btn ${langueActive === null ? 'actif' : ''}`} onClick={() => setLangueActive(null)}>Toutes</button>
+          {languesDispos.map(l => (
+            <button key={l.code} className={`filtre-btn ${langueActive === l.code ? 'actif' : ''}`} onClick={() => setLangueActive(l.code)}>{l.label}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Annotation panel (editorial notes, keywords) */}
       {annPrincipale && languesVisibles && (
         <div className="carte-accent" style={{ marginBottom: 'var(--sp-4)' }}>
-          {annPrincipale.gr && (
-            <div style={{ marginBottom: 'var(--sp-3)' }}>
-              <span className="langue-chip grec">Grec</span>
-              <div style={{ fontFamily: 'serif', fontSize: 'var(--text-base)', color: 'var(--text)', marginTop: 'var(--sp-2)', lineHeight: 1.7 }}>{annPrincipale.gr}</div>
-            </div>
-          )}
-          {annPrincipale.heb && (
-            <div style={{ marginBottom: 'var(--sp-3)' }}>
-              <span className="langue-chip hebreu">Hébreu</span>
-              <div dir="rtl" lang="he" style={{ fontFamily: 'serif', fontSize: 'var(--text-lg)', color: 'var(--text)', marginTop: 'var(--sp-2)', lineHeight: 1.8, textAlign: 'right' }}>{annPrincipale.heb}</div>
-            </div>
-          )}
-          {annPrincipale.lat && (
-            <div style={{ marginBottom: 'var(--sp-2)' }}>
-              <span className="langue-chip latin">Latin</span>
-              <div style={{ fontFamily: 'serif', fontSize: 'var(--text-base)', color: 'var(--text)', marginTop: 'var(--sp-2)', lineHeight: 1.6, fontStyle: 'italic' }}>{annPrincipale.lat}</div>
-            </div>
-          )}
           {annPrincipale.mots_cles?.length > 0 && (
-            <div style={{ marginTop: 'var(--sp-3)', borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-3)' }}>
+            <div style={{ marginBottom: 'var(--sp-3)' }}>
               <div className="section-label">Mots clés</div>
               {annPrincipale.mots_cles.map((m, i) => (
                 <div key={i} style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', padding: 'var(--sp-2) var(--sp-3)', marginBottom: 'var(--sp-2)' }}>
@@ -228,6 +248,11 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
           {bible.donnees.versets.map(v => {
             const annV = annParVerset[v.numero];
             const estSauvegarde = versets.versets.find(sv => sv.id === `${livre.abrev || livre.nom}-${chapitre}-${v.numero}`);
+
+            // Gather originals for this verse
+            const showLangs = languesVisibles && bible.languesOriginales;
+            const langsToShow = showLangs ? languesDispos.filter(l => langueActive === null || langueActive === l.code) : [];
+
             return (
               <div key={v.numero} style={{ padding: 'var(--sp-3) var(--sp-4)', borderRadius: 'var(--radius)', background: annV ? 'var(--accent-light)' : 'transparent', borderLeft: annV ? '3px solid var(--accent)' : '3px solid transparent' }}>
                 <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start' }}>
@@ -240,8 +265,37 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
                     <button onClick={() => sauvegarder(v.numero, v.texte)} title={estSauvegarde ? 'Sauvegardé' : 'Sauvegarder'} className="btn-ghost" style={{ color: estSauvegarde ? 'var(--accent)' : 'var(--text-tertiary)' }}>{estSauvegarde ? '★' : '☆'}</button>
                   </div>
                 </div>
+
+                {/* Interlinear original languages */}
+                {langsToShow.length > 0 && (
+                  <div style={{ marginTop: 'var(--sp-2)', marginLeft: 28, display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+                    {langsToShow.map(lang => {
+                      const texteOriginal = getOriginal(lang.code, v.numero);
+                      if (!texteOriginal) return null;
+                      return (
+                        <div key={lang.code} style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'baseline' }}>
+                          <span className={`langue-chip ${lang.chipClass}`} style={{ fontSize: '0.6rem', padding: '1px 6px' }}>{lang.label.slice(0, 2)}</span>
+                          <div style={{
+                            fontFamily: 'serif',
+                            fontSize: 'var(--text-sm)',
+                            color: 'var(--text-secondary)',
+                            lineHeight: 1.6,
+                            fontStyle: lang.code === 'lat' ? 'italic' : 'normal',
+                            direction: lang.code === 'heb' ? 'rtl' : 'ltr',
+                            textAlign: lang.code === 'heb' ? 'right' : 'left',
+                            flex: 1,
+                          }}>
+                            {texteOriginal}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* AI explanation */}
                 {versetExplique === v.numero && (
-                  <div style={{ marginTop: 'var(--sp-3)', marginLeft: 30, background: 'var(--surface-alt)', borderRadius: 'var(--radius)', padding: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--text)', lineHeight: 1.6 }}>
+                  <div style={{ marginTop: 'var(--sp-3)', marginLeft: 28, background: 'var(--surface-alt)', borderRadius: 'var(--radius)', padding: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--text)', lineHeight: 1.6 }}>
                     {loadingIA
                       ? <span className="text-meta">Gemini réfléchit...</span>
                       : <>
