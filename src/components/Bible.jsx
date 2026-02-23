@@ -22,16 +22,79 @@ export default function Bible({ versets, gemini }) {
     setVue('livre');
   }
 
-  async function ouvrirChapitre(num) {
+  async function ouvrirChapitre(num, livre) {
+    const l = livre || livreChoisi;
     const ch = Number(num);
-    if (!ch || ch < 1 || ch > livreChoisi.chapitres) return;
+    if (!ch || ch < 1 || ch > l.chapitres) return;
+    setLivreChoisi(l);
     setChapitreChoisi(ch);
     setVue('chapitre');
-    await bible.fetchChapitre(livreChoisi.nom, ch);
+    await bible.fetchChapitre(l.nom, ch);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function allerChapitreSuivant() {
+    if (chapitreChoisi < livreChoisi.chapitres) {
+      ouvrirChapitre(chapitreChoisi + 1);
+    } else {
+      // Next book
+      const idx = livresCanon.findIndex(l => l.id === livreChoisi.id);
+      if (idx < livresCanon.length - 1) {
+        const nextLivre = livresCanon[idx + 1];
+        ouvrirChapitre(1, nextLivre);
+      }
+    }
+  }
+
+  function allerChapitrePrecedent() {
+    if (chapitreChoisi > 1) {
+      ouvrirChapitre(chapitreChoisi - 1);
+    } else {
+      // Previous book, last chapter
+      const idx = livresCanon.findIndex(l => l.id === livreChoisi.id);
+      if (idx > 0) {
+        const prevLivre = livresCanon[idx - 1];
+        ouvrirChapitre(prevLivre.chapitres, prevLivre);
+      }
+    }
+  }
+
+  // Compute prev/next info for display
+  function getNavInfo() {
+    const idx = livresCanon.findIndex(l => l.id === livreChoisi.id);
+    let prev = null, next = null;
+
+    if (chapitreChoisi > 1) {
+      prev = { label: `${livreChoisi.nom} ${chapitreChoisi - 1}` };
+    } else if (idx > 0) {
+      const pl = livresCanon[idx - 1];
+      prev = { label: `${pl.nom} ${pl.chapitres}` };
+    }
+
+    if (chapitreChoisi < livreChoisi.chapitres) {
+      next = { label: `${livreChoisi.nom} ${chapitreChoisi + 1}` };
+    } else if (idx < livresCanon.length - 1) {
+      const nl = livresCanon[idx + 1];
+      next = { label: `${nl.nom} 1` };
+    }
+
+    return { prev, next };
   }
 
   if (vue === 'chapitre') {
-    return <VueChapitre livre={livreChoisi} chapitre={chapitreChoisi} bible={bible} versets={versets} gemini={gemini} retour={() => setVue('livre')} />;
+    return (
+      <VueChapitre
+        livre={livreChoisi}
+        chapitre={chapitreChoisi}
+        bible={bible}
+        versets={versets}
+        gemini={gemini}
+        retour={() => setVue('livre')}
+        allerSuivant={allerChapitreSuivant}
+        allerPrecedent={allerChapitrePrecedent}
+        navInfo={getNavInfo()}
+      />
+    );
   }
 
   if (vue === 'livre') {
@@ -120,14 +183,31 @@ function VueLivre({ livre, saisieChapitre, setSaisieChapitre, ouvrirChapitre, re
   );
 }
 
-function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
+function NavChapitre({ navInfo, allerPrecedent, allerSuivant }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--sp-4) 0', borderTop: '1px solid var(--border)', marginTop: 'var(--sp-5)' }}>
+      {navInfo.prev ? (
+        <button onClick={allerPrecedent} className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-1)' }}>
+          <span>←</span>
+          <span className="text-secondary" style={{ fontSize: 'var(--text-sm)' }}>{navInfo.prev.label}</span>
+        </button>
+      ) : <div />}
+      {navInfo.next ? (
+        <button onClick={allerSuivant} className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-1)' }}>
+          <span className="text-secondary" style={{ fontSize: 'var(--text-sm)' }}>{navInfo.next.label}</span>
+          <span>→</span>
+        </button>
+      ) : <div />}
+    </div>
+  );
+}
+
+function VueChapitre({ livre, chapitre, bible, versets, gemini, retour, allerSuivant, allerPrecedent, navInfo }) {
   const [languesVisibles, setLanguesVisibles] = useState(false);
-  const [langueActive, setLangueActive] = useState(null); // 'gr', 'heb', 'lat' or null (all)
+  const [langueActive, setLangueActive] = useState(null);
   const [versetExplique, setVersetExplique] = useState(null);
   const [explicationIA, setExplicationIA] = useState('');
   const [loadingIA, setLoadingIA] = useState(false);
-
-  const estAT = livre.testament === 'AT';
 
   // Annotations for this chapter
   const annsChap = [];
@@ -177,7 +257,6 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
     });
   }
 
-  // Get original language verse text for a given verse number
   function getOriginal(lang, numero) {
     const langData = bible.languesOriginales?.[lang];
     if (!langData) return null;
@@ -195,6 +274,16 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
   return (
     <div>
       <button onClick={retour} className="btn-retour">← {livre.nom}</button>
+
+      {/* Top navigation */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-3)' }}>
+        {navInfo.prev ? (
+          <button onClick={allerPrecedent} className="btn-ghost" style={{ fontSize: 'var(--text-sm)' }}>← {navInfo.prev.label}</button>
+        ) : <div />}
+        {navInfo.next ? (
+          <button onClick={allerSuivant} className="btn-ghost" style={{ fontSize: 'var(--text-sm)' }}>{navInfo.next.label} →</button>
+        ) : <div />}
+      </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--sp-4)', flexWrap: 'wrap', gap: 'var(--sp-3)' }}>
         <div>
@@ -216,7 +305,7 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
         </div>
       )}
 
-      {/* Annotation panel (editorial notes, keywords) */}
+      {/* Annotation panel */}
       {annPrincipale && languesVisibles && (
         <div className="carte-accent" style={{ marginBottom: 'var(--sp-4)' }}>
           {annPrincipale.mots_cles?.length > 0 && (
@@ -248,8 +337,6 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
           {bible.donnees.versets.map(v => {
             const annV = annParVerset[v.numero];
             const estSauvegarde = versets.versets.find(sv => sv.id === `${livre.abrev || livre.nom}-${chapitre}-${v.numero}`);
-
-            // Gather originals for this verse
             const showLangs = languesVisibles && bible.languesOriginales;
             const langsToShow = showLangs ? languesDispos.filter(l => langueActive === null || langueActive === l.code) : [];
 
@@ -309,6 +396,11 @@ function VueChapitre({ livre, chapitre, bible, versets, gemini, retour }) {
             );
           })}
         </div>
+      )}
+
+      {/* Bottom navigation — prev/next chapter */}
+      {bible.donnees?.versets && (
+        <NavChapitre navInfo={navInfo} allerPrecedent={allerPrecedent} allerSuivant={allerSuivant} />
       )}
     </div>
   );
