@@ -10,7 +10,10 @@ export function DefinitionProvider({ children, vocabulaire }) {
   const wikt = useWiktionnaire();
 
   const ouvrir = useCallback(async (mot, rect) => {
-    const motNettoye = mot.replace(/[.,;:!?'"«»()[\]{}—–\-…]/g, '').trim().toLowerCase();
+    // Strip all punctuation including curly apostrophes
+    let motNettoye = mot.replace(/[.,;:!?''\u2019\u2018"«»()[\]{}—–\-…]/g, '').trim().toLowerCase();
+    // Safety: remove leading elided article/pronoun if still joined (l'homme → homme)
+    motNettoye = motNettoye.replace(/^[ldsnjcqm](?=[aeéèêëiîïoôuûùüyàâæœh])/, '');
     if (!motNettoye || motNettoye.length < 2) return;
 
     setMotActif({ mot: motNettoye, rect });
