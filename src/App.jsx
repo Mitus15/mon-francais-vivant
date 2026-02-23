@@ -3,6 +3,8 @@ import { useProgression } from './hooks/useProgression';
 import { useVocabulaire } from './hooks/useVocabulaire';
 import { useVersets } from './hooks/useVersets';
 import { useGemini } from './hooks/useGemini';
+import { DefinitionProvider } from './contexts/DefinitionContext';
+import DefinitionPopover from './components/DefinitionPopover';
 import Tableau from './components/Tableau';
 import LecondeDuJour from './components/LecondeDuJour';
 import Dictionnaire from './components/Dictionnaire';
@@ -18,23 +20,41 @@ import Tuteur from './components/Tuteur';
 import RechercheGlobale from './components/RechercheGlobale';
 
 const ONGLETS = [
-  { id: 'tableau', icone: '🏠', label: 'Tableau' },
-  { id: 'lecon', icone: '📅', label: 'Leçon' },
-  { id: 'dictionnaire', icone: '🔍', label: 'Dico' },
-  { id: 'vocabulaire', icone: '⭐', label: 'Mots' },
-  { id: 'themes', icone: '📖', label: 'Thèmes' },
-  { id: 'expressions', icone: '💬', label: 'Idiomes' },
-  { id: 'grammaire', icone: '📚', label: 'Grammaire' },
-  { id: 'verbes', icone: '🔀', label: 'Verbes' },
-  { id: 'prononciation', icone: '👂', label: 'Sons' },
-  { id: 'bible', icone: '📜', label: 'Bible' },
-  { id: 'theologie', icone: '✝️', label: 'Théologie' },
-  { id: 'tuteur', icone: '🤖', label: 'Tuteur' },
+  { id: 'accueil', label: 'Accueil' },
+  { id: 'apprendre', label: 'Apprendre' },
+  { id: 'mots', label: 'Mots' },
+  { id: 'bible', label: 'Bible' },
+  { id: 'ia', label: 'Tuteur' },
 ];
 
+const SOUS_ONGLETS = {
+  apprendre: [
+    { id: 'lecon', label: 'Leçon du jour' },
+    { id: 'grammaire', label: 'Grammaire' },
+    { id: 'verbes', label: 'Conjugaison' },
+    { id: 'expressions', label: 'Expressions' },
+    { id: 'prononciation', label: 'Prononciation' },
+  ],
+  mots: [
+    { id: 'dictionnaire', label: 'Dictionnaire' },
+    { id: 'vocabulaire', label: 'Mon vocabulaire' },
+    { id: 'themes', label: 'Par thème' },
+  ],
+  bible: [
+    { id: 'bible', label: 'Lire la Bible' },
+    { id: 'theologie', label: 'Théologie' },
+  ],
+};
+
 export default function App() {
-  const [ongletActif, setOngletActif] = useState('tableau');
+  const [ongletActif, setOngletActif] = useState('accueil');
+  const [sousOnglets, setSousOnglets] = useState({
+    apprendre: 'lecon',
+    mots: 'dictionnaire',
+    bible: 'bible',
+  });
   const [rechercheOuverte, setRechercheOuverte] = useState(false);
+
   const progression = useProgression();
   const vocabulaire = useVocabulaire();
   const versets = useVersets();
@@ -48,80 +68,115 @@ export default function App() {
     return 'B1+';
   })();
 
+  function naviguerVers(page) {
+    // Smart navigation: map old page ids to new grouped structure
+    if (page === 'tableau') { setOngletActif('accueil'); return; }
+    if (['lecon', 'grammaire', 'verbes', 'expressions', 'prononciation'].includes(page)) {
+      setOngletActif('apprendre');
+      setSousOnglets(prev => ({ ...prev, apprendre: page }));
+      return;
+    }
+    if (['dictionnaire', 'vocabulaire', 'themes'].includes(page)) {
+      setOngletActif('mots');
+      setSousOnglets(prev => ({ ...prev, mots: page }));
+      return;
+    }
+    if (['bible', 'theologie'].includes(page)) {
+      setOngletActif('bible');
+      setSousOnglets(prev => ({ ...prev, bible: page }));
+      return;
+    }
+    if (page === 'tuteur' || page === 'ia') { setOngletActif('ia'); return; }
+  }
+
+  function sousOngletActif() {
+    return sousOnglets[ongletActif] || null;
+  }
+
   function rendrePage() {
-    switch (ongletActif) {
-      case 'tableau':
-        return <Tableau progression={prog} pourcentageNiveau={pourcentageNiveau} niveauDebloque={niveauDebloque} vocabulaire={vocabulaire} naviguerVers={setOngletActif} />;
-      case 'lecon':
-        return <LecondeDuJour progression={prog} completerLecon={progression.completerLecon} vocabulaire={vocabulaire} />;
-      case 'dictionnaire':
-        return <Dictionnaire vocabulaire={vocabulaire} />;
-      case 'vocabulaire':
-        return <MonVocabulaire vocabulaire={vocabulaire} />;
-      case 'expressions':
-        return <Expressions niveauActuel={niveauActuel} />;
-      case 'grammaire':
-        return <Grammaire niveauActuel={niveauActuel} />;
-      case 'verbes':
-        return <Verbes />;
-      case 'themes':
-        return <VocabulaireThemes vocabulaire={vocabulaire} />;
-      case 'prononciation':
-        return <Prononciation />;
-      case 'bible':
-        return <Bible versets={versets} gemini={gemini} />;
-      case 'theologie':
-        return <Theologie />;
-      case 'tuteur':
-        return <Tuteur gemini={gemini} niveauActuel={niveauActuel} />;
-      default:
-        return null;
+    if (ongletActif === 'accueil') {
+      return <Tableau progression={prog} pourcentageNiveau={pourcentageNiveau} niveauDebloque={niveauDebloque} vocabulaire={vocabulaire} naviguerVers={naviguerVers} />;
+    }
+    if (ongletActif === 'ia') {
+      return <Tuteur gemini={gemini} niveauActuel={niveauActuel} />;
+    }
+
+    const sous = sousOngletActif();
+    switch (sous) {
+      case 'lecon': return <LecondeDuJour progression={prog} completerLecon={progression.completerLecon} vocabulaire={vocabulaire} />;
+      case 'grammaire': return <Grammaire niveauActuel={niveauActuel} />;
+      case 'verbes': return <Verbes />;
+      case 'expressions': return <Expressions niveauActuel={niveauActuel} />;
+      case 'prononciation': return <Prononciation />;
+      case 'dictionnaire': return <Dictionnaire vocabulaire={vocabulaire} />;
+      case 'vocabulaire': return <MonVocabulaire vocabulaire={vocabulaire} />;
+      case 'themes': return <VocabulaireThemes vocabulaire={vocabulaire} />;
+      case 'bible': return <Bible versets={versets} gemini={gemini} />;
+      case 'theologie': return <Theologie />;
+      default: return null;
     }
   }
 
+  const sousList = SOUS_ONGLETS[ongletActif] || null;
+
   return (
-    <div className="app">
-      <nav className="nav-barre">
-        <div className="nav-entete">
-          <div className="nav-logo">Mon <span>Français</span> Vivant</div>
-          <div className="nav-info">
-            <button
-              onClick={() => setRechercheOuverte(true)}
-              title="Recherche globale"
-              style={{ background: 'none', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--or)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}
-            >
-              🔍
-            </button>
-            <span className="badge-niveau">{niveauActuel}</span>
-            {prog.streak > 0 && (
-              <span className="streak-badge">🔥 {prog.streak}</span>
-            )}
+    <DefinitionProvider vocabulaire={vocabulaire}>
+      <div className="app">
+        <nav className="nav-barre">
+          <div className="nav-entete">
+            <div className="nav-logo">Mon <span>Français</span> Vivant</div>
+            <div className="nav-info">
+              <button
+                onClick={() => setRechercheOuverte(true)}
+                className="btn-ghost"
+                title="Recherche"
+              >
+                Rechercher
+              </button>
+              <span className="badge-niveau">{niveauActuel}</span>
+              {prog.streak > 0 && (
+                <span className="streak-badge">{prog.streak}j</span>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="nav-onglets">
-          {ONGLETS.map(o => (
-            <button
-              key={o.id}
-              className={`onglet ${ongletActif === o.id ? 'actif' : ''}`}
-              onClick={() => setOngletActif(o.id)}
-            >
-              <span className="onglet-icone">{o.icone}</span>
-              {o.label}
-            </button>
-          ))}
-        </div>
-      </nav>
+          <div className="nav-onglets">
+            {ONGLETS.map(o => (
+              <button
+                key={o.id}
+                className={`onglet ${ongletActif === o.id ? 'actif' : ''}`}
+                onClick={() => setOngletActif(o.id)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </nav>
 
-      <main className="contenu-principal">
-        {rendrePage()}
-      </main>
+        <main className="contenu-principal">
+          {sousList && (
+            <div className="sous-nav">
+              {sousList.map(s => (
+                <button
+                  key={s.id}
+                  className={`sous-nav-btn ${sousOnglets[ongletActif] === s.id ? 'actif' : ''}`}
+                  onClick={() => setSousOnglets(prev => ({ ...prev, [ongletActif]: s.id }))}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {rendrePage()}
+        </main>
 
-      <RechercheGlobale
-        ouvert={rechercheOuverte}
-        fermer={() => setRechercheOuverte(false)}
-        naviguerVers={setOngletActif}
-        vocabulaire={vocabulaire}
-      />
-    </div>
+        <RechercheGlobale
+          ouvert={rechercheOuverte}
+          fermer={() => setRechercheOuverte(false)}
+          naviguerVers={naviguerVers}
+          vocabulaire={vocabulaire}
+        />
+        <DefinitionPopover />
+      </div>
+    </DefinitionProvider>
   );
 }

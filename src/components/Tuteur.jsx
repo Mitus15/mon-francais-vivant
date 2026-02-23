@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import TexteInteractif from './TexteInteractif';
 
 const SUGGESTIONS = {
   A1: ["Présente-toi en français", "Explique-moi les articles (le, la, les)", "Aide-moi à conjuguer 'être'", "Comment dit-on 'bonjour' et 'au revoir' ?"],
@@ -11,14 +12,14 @@ export default function Tuteur({ gemini, niveauActuel }) {
 
   return (
     <div>
-      <h2 className="section-titre">🤖 Tuteur IA — Gemini</h2>
+      <h2 className="section-titre">Tuteur IA — Gemini</h2>
       <p className="section-intro">
-        Un tuteur personnel en français, adapté à ton niveau <strong style={{ color: 'var(--or)' }}>{niveauActuel}</strong>.
+        Un tuteur personnel en français, adapté à ton niveau <strong className="text-accent">{niveauActuel}</strong>.
         Conversation, corrections, exercices — tout en français.
       </p>
 
-      <div className="filtres" style={{ marginBottom: '20px' }}>
-        {[['chat', '💬 Conversation'], ['correcteur', '✍️ Correcteur'], ['exercices', '🎯 Exercices'], ['config', '⚙️ Config']].map(([v, l]) => (
+      <div className="filtres" style={{ marginBottom: 'var(--sp-5)' }}>
+        {[['chat', 'Conversation'], ['correcteur', 'Correcteur'], ['exercices', 'Exercices'], ['config', 'Config']].map(([v, l]) => (
           <button key={v} className={`filtre-btn ${onglet === v ? 'actif' : ''}`} onClick={() => setOnglet(v)}>{l}</button>
         ))}
       </div>
@@ -63,11 +64,11 @@ function VueChat({ gemini, niveauActuel }) {
   return (
     <div>
       {messages.length === 0 && (
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '0.82rem', color: 'var(--texte-clair)', marginBottom: '10px' }}>Suggestions pour ton niveau {niveauActuel} :</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ marginBottom: 'var(--sp-4)' }}>
+          <div className="text-secondary" style={{ marginBottom: 'var(--sp-3)' }}>Suggestions pour ton niveau {niveauActuel} :</div>
+          <div className="stack-sm">
             {suggestions.map((s, i) => (
-              <button key={i} onClick={() => setSaisie(s)} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(201,168,76,0.2)', color: 'var(--texte)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif' }}>
+              <button key={i} onClick={() => setSaisie(s)} className="carte carte-clickable" style={{ padding: 'var(--sp-2) var(--sp-3)', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
                 {s}
               </button>
             ))}
@@ -75,40 +76,41 @@ function VueChat({ gemini, niveauActuel }) {
         </div>
       )}
 
-      <div style={{ minHeight: '200px', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px', padding: '4px' }}>
+      <div style={{ minHeight: 200, maxHeight: 400, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)', marginBottom: 'var(--sp-3)', padding: 'var(--sp-1)' }}>
         {messages.map((m, i) => (
           <div key={i} style={{
             alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
             maxWidth: '85%',
-            background: m.role === 'user' ? 'var(--bleu-moyen)' : m.role === 'erreur' ? 'rgba(244,67,54,0.15)' : 'rgba(255,255,255,0.08)',
-            border: '1px solid ' + (m.role === 'user' ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.1)'),
-            borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-            padding: '10px 14px', fontSize: '0.88rem',
-            color: m.role === 'erreur' ? '#ef5350' : 'var(--texte)',
+            background: m.role === 'user' ? 'var(--primary)' : m.role === 'erreur' ? 'var(--error-light)' : 'var(--surface-alt)',
+            border: m.role === 'user' ? 'none' : `1px solid ${m.role === 'erreur' ? 'var(--error)' : 'var(--border)'}`,
+            borderRadius: m.role === 'user' ? 'var(--radius-xl) var(--radius-xl) var(--sp-1) var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) var(--radius-xl) var(--sp-1)',
+            padding: 'var(--sp-3) var(--sp-4)', fontSize: 'var(--text-sm)',
+            color: m.role === 'user' ? 'white' : m.role === 'erreur' ? 'var(--error)' : 'var(--text)',
             lineHeight: 1.6, whiteSpace: 'pre-wrap',
           }}>
-            {m.role === 'assistant' && <div style={{ fontSize: '0.65rem', color: 'var(--or)', fontWeight: 700, marginBottom: '4px' }}>🤖 TUTEUR IA</div>}
-            {m.text}
+            {m.role === 'assistant' && <div className="section-label" style={{ marginBottom: 'var(--sp-1)' }}>Tuteur IA</div>}
+            {m.role === 'assistant' ? <TexteInteractif texte={m.text} /> : m.text}
           </div>
         ))}
-        {gemini.loading && <div style={{ alignSelf: 'flex-start', color: 'var(--gris)', fontSize: '0.85rem', fontStyle: 'italic' }}>Gemini réfléchit...</div>}
+        {gemini.loading && <div className="text-meta" style={{ alignSelf: 'flex-start', fontStyle: 'italic' }}>Gemini réfléchit...</div>}
         <div ref={finRef} />
       </div>
 
       {messages.length > 0 && (
-        <button onClick={() => setMessages([])} style={{ background: 'none', border: 'none', color: 'var(--gris)', cursor: 'pointer', fontSize: '0.78rem', marginBottom: '8px', fontFamily: 'Inter, sans-serif' }}>
-          🗑️ Nouvelle conversation
+        <button onClick={() => setMessages([])} className="btn-ghost" style={{ marginBottom: 'var(--sp-2)', fontSize: 'var(--text-xs)' }}>
+          Nouvelle conversation
         </button>
       )}
 
-      <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
         <input
           type="text" value={saisie} onChange={e => setSaisie(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && envoyer()}
           placeholder="Écris en français..."
-          style={{ flex: 1, padding: '12px 14px', borderRadius: 'var(--radius)', border: '2px solid rgba(201,168,76,0.3)', background: 'rgba(255,255,255,0.97)', color: 'var(--texte)', fontSize: '0.95rem', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+          className="input-standard"
+          style={{ flex: 1 }}
         />
-        <button onClick={envoyer} disabled={gemini.loading} className="btn-primaire" style={{ width: 'auto', padding: '12px 18px' }}>Envoyer</button>
+        <button onClick={envoyer} disabled={gemini.loading} className="btn-primaire" style={{ width: 'auto' }}>Envoyer</button>
       </div>
     </div>
   );
@@ -137,21 +139,22 @@ Texte : "${texte}"`;
 
   return (
     <div>
-      <div style={{ marginBottom: '12px', fontSize: '0.85rem', color: 'var(--texte-clair)' }}>
+      <div className="text-secondary" style={{ marginBottom: 'var(--sp-3)' }}>
         Écris ou colle un texte en français — l'IA le corrige et explique les règles.
       </div>
       <textarea
         value={texte} onChange={e => setTexte(e.target.value)}
         placeholder="Colle ou écris ton texte en français ici..."
         rows={6}
-        style={{ width: '100%', padding: '12px 14px', borderRadius: 'var(--radius)', border: '2px solid rgba(201,168,76,0.3)', background: 'rgba(255,255,255,0.97)', color: 'var(--texte)', fontSize: '0.9rem', outline: 'none', fontFamily: 'Lora, serif', resize: 'vertical', marginBottom: '10px', boxSizing: 'border-box' }}
+        className="textarea-standard"
+        style={{ marginBottom: 'var(--sp-3)' }}
       />
-      <button onClick={analyser} disabled={gemini.loading || !texte.trim()} className="btn-primaire" style={{ width: 'auto', padding: '12px 24px', marginBottom: '16px' }}>
+      <button onClick={analyser} disabled={gemini.loading || !texte.trim()} className="btn-primaire" style={{ width: 'auto', marginBottom: 'var(--sp-4)' }}>
         {gemini.loading ? 'Analyse en cours...' : 'Analyser'}
       </button>
       {resultat && (
-        <div className="carte" style={{ whiteSpace: 'pre-wrap', fontSize: '0.88rem', lineHeight: 1.7, color: 'var(--texte)' }}>
-          {resultat}
+        <div className="carte" style={{ whiteSpace: 'pre-wrap', fontSize: 'var(--text-sm)', lineHeight: 1.7 }}>
+          <TexteInteractif texte={resultat} />
         </div>
       )}
     </div>
@@ -188,32 +191,37 @@ function VueExercices({ gemini, niveauActuel }) {
 
   return (
     <div>
-      <div className="filtres" style={{ marginBottom: '16px' }}>
-        {[['conjugaison', '🔀 Conjugaison'], ['vocabulaire', '📚 Vocabulaire'], ['traduction', '🌐 Traduction'], ['grammaire', '📝 Grammaire']].map(([v, l]) => (
+      <div className="filtres" style={{ marginBottom: 'var(--sp-4)' }}>
+        {[['conjugaison', 'Conjugaison'], ['vocabulaire', 'Vocabulaire'], ['traduction', 'Traduction'], ['grammaire', 'Grammaire']].map(([v, l]) => (
           <button key={v} className={`filtre-btn ${typeExo === v ? 'actif' : ''}`} onClick={() => setTypeExo(v)}>{l}</button>
         ))}
       </div>
-      <button onClick={genererExercice} disabled={gemini.loading} className="btn-primaire" style={{ width: 'auto', padding: '12px 24px', marginBottom: '16px' }}>
+      <button onClick={genererExercice} disabled={gemini.loading} className="btn-primaire" style={{ width: 'auto', marginBottom: 'var(--sp-4)' }}>
         {gemini.loading && !exercice ? 'Génération...' : 'Générer un exercice'}
       </button>
 
       {exercice && (
         <div>
-          <div className="carte" style={{ whiteSpace: 'pre-wrap', fontSize: '0.88rem', lineHeight: 1.7, color: 'var(--texte)', marginBottom: '12px' }}>{exercice}</div>
+          <div className="carte" style={{ whiteSpace: 'pre-wrap', fontSize: 'var(--text-sm)', lineHeight: 1.7, marginBottom: 'var(--sp-3)' }}>
+            <TexteInteractif texte={exercice} />
+          </div>
           {!correction && (
             <>
               <textarea value={reponse} onChange={e => setReponse(e.target.value)} placeholder="Écris tes réponses ici (numérotées)..." rows={5}
-                style={{ width: '100%', padding: '12px 14px', borderRadius: 'var(--radius)', border: '2px solid rgba(201,168,76,0.3)', background: 'rgba(255,255,255,0.97)', color: 'var(--texte)', fontSize: '0.9rem', outline: 'none', fontFamily: 'Lora, serif', resize: 'vertical', marginBottom: '10px', boxSizing: 'border-box' }}
+                className="textarea-standard"
+                style={{ marginBottom: 'var(--sp-3)' }}
               />
-              <button onClick={corriger} disabled={gemini.loading || !reponse.trim()} className="btn-primaire" style={{ width: 'auto', padding: '12px 24px' }}>
+              <button onClick={corriger} disabled={gemini.loading || !reponse.trim()} className="btn-primaire" style={{ width: 'auto' }}>
                 {gemini.loading ? 'Correction...' : 'Corriger mes réponses'}
               </button>
             </>
           )}
           {correction && (
             <div>
-              <div className="carte" style={{ whiteSpace: 'pre-wrap', fontSize: '0.88rem', lineHeight: 1.7, color: 'var(--texte)', marginBottom: '12px' }}>{correction}</div>
-              <button onClick={() => { setExercice(null); setCorrection(null); setReponse(''); }} style={{ background: 'none', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--or)', borderRadius: '20px', padding: '8px 16px', fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+              <div className="carte" style={{ whiteSpace: 'pre-wrap', fontSize: 'var(--text-sm)', lineHeight: 1.7, marginBottom: 'var(--sp-3)' }}>
+                <TexteInteractif texte={correction} />
+              </div>
+              <button onClick={() => { setExercice(null); setCorrection(null); setReponse(''); }} className="btn-secondaire">
                 Nouvel exercice
               </button>
             </div>
@@ -239,34 +247,35 @@ function VueConfig({ gemini, allerVersChat }) {
 
   return (
     <div>
-      <div className="carte" style={{ marginBottom: '16px' }}>
-        <div style={{ fontFamily: 'Lora, serif', fontWeight: 600, color: 'var(--bleu-nuit)', marginBottom: '10px', fontSize: '1rem' }}>Configuration de Gemini AI</div>
-        <div style={{ fontSize: '0.85rem', color: 'var(--texte-clair)', lineHeight: 1.6, marginBottom: '14px' }}>
+      <div className="carte" style={{ marginBottom: 'var(--sp-4)' }}>
+        <div className="heading-card" style={{ marginBottom: 'var(--sp-3)' }}>Configuration de Gemini AI</div>
+        <div className="text-secondary" style={{ lineHeight: 1.6, marginBottom: 'var(--sp-4)' }}>
           Pour utiliser le tuteur IA, tu as besoin d'une clé API Gemini (gratuite) :<br />
-          1. Va sur <strong style={{ color: 'var(--or)' }}>aistudio.google.com</strong><br />
+          1. Va sur <strong className="text-accent">aistudio.google.com</strong><br />
           2. Clique sur "Get API key" → "Create API key"<br />
           3. Copie la clé et colle-la ci-dessous
         </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--gris)', marginBottom: '12px' }}>
-          🔒 Ta clé est stockée uniquement sur ton appareil (localStorage), jamais envoyée ailleurs.
+        <div className="text-meta" style={{ marginBottom: 'var(--sp-3)' }}>
+          Ta clé est stockée uniquement sur ton appareil (localStorage), jamais envoyée ailleurs.
         </div>
         <input
           type="password" value={saisieKey} onChange={e => setSaisieKey(e.target.value)}
           placeholder="AIza..."
-          style={{ width: '100%', padding: '12px 14px', borderRadius: 'var(--radius)', border: '2px solid rgba(201,168,76,0.3)', background: 'rgba(255,255,255,0.97)', color: 'var(--texte)', fontSize: '0.9rem', outline: 'none', fontFamily: 'Inter, sans-serif', marginBottom: '12px', boxSizing: 'border-box' }}
+          className="input-standard"
+          style={{ marginBottom: 'var(--sp-3)' }}
         />
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <button onClick={tester} disabled={testLoading || !saisieKey.trim()} className="btn-primaire" style={{ width: 'auto', padding: '10px 20px' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button onClick={tester} disabled={testLoading || !saisieKey.trim()} className="btn-primaire" style={{ width: 'auto' }}>
             {testLoading ? 'Test en cours...' : 'Sauvegarder & Tester'}
           </button>
-          {testOk === true && <span style={{ color: '#4CAF50', fontSize: '0.85rem', fontWeight: 600 }}>✓ Connexion réussie !</span>}
-          {testOk === false && <span style={{ color: '#ef5350', fontSize: '0.85rem' }}>✗ Clé invalide ou erreur réseau.</span>}
+          {testOk === true && <span style={{ color: 'var(--success)', fontSize: 'var(--text-sm)', fontWeight: 600 }}>Connexion réussie !</span>}
+          {testOk === false && <span style={{ color: 'var(--error)', fontSize: 'var(--text-sm)' }}>Clé invalide ou erreur réseau.</span>}
         </div>
       </div>
 
       {gemini.hasKey && (
-        <div style={{ background: 'rgba(76,175,80,0.1)', border: '1px solid rgba(76,175,80,0.3)', borderRadius: 'var(--radius)', padding: '12px 16px', fontSize: '0.85rem', color: '#81C784' }}>
-          ✓ Clé API configurée. Le tuteur IA est actif.
+        <div className="tip-box-success">
+          Clé API configurée. Le tuteur IA est actif.
         </div>
       )}
     </div>
@@ -276,9 +285,8 @@ function VueConfig({ gemini, allerVersChat }) {
 function BanniereConfigRequise() {
   return (
     <div className="etat-vide">
-      <div className="etat-vide-icone">🔑</div>
       <h3>Clé API requise</h3>
-      <p>Configure ta clé Gemini dans l'onglet <strong>⚙️ Config</strong> pour accéder à cette fonctionnalité.</p>
+      <p>Configure ta clé Gemini dans l'onglet <strong>Config</strong> pour accéder à cette fonctionnalité.</p>
     </div>
   );
 }

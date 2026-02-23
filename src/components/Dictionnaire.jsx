@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDictionnaire } from '../hooks/useDictionnaire';
+import TexteInteractif from './TexteInteractif';
 
 export default function Dictionnaire({ vocabulaire }) {
   const [saisie, setSaisie] = useState('');
@@ -14,7 +15,7 @@ export default function Dictionnaire({ vocabulaire }) {
 
   return (
     <div>
-      <h2 className="section-titre">🔍 Dictionnaire</h2>
+      <h2 className="section-titre">Dictionnaire</h2>
       <p className="section-intro">
         Cherche n'importe quel mot français. Tu verras sa définition, des exemples et sa prononciation.
       </p>
@@ -28,7 +29,7 @@ export default function Dictionnaire({ vocabulaire }) {
           className="champ-recherche"
           autoFocus
         />
-        <button type="submit" className="bouton-recherche">🔍</button>
+        <button type="submit" className="bouton-recherche">→</button>
       </form>
 
       {chargement && (
@@ -38,43 +39,39 @@ export default function Dictionnaire({ vocabulaire }) {
         </div>
       )}
 
-      {erreur && (
-        <div className="message-erreur">{erreur}</div>
-      )}
+      {erreur && <div className="message-erreur">{erreur}</div>}
 
       {resultat && (
         <div className="carte">
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--sp-3)', marginBottom: 'var(--sp-1)' }}>
             <div>
               <div className="resultat-mot">{resultat.mot}</div>
-              {resultat.phonetique && (
-                <div className="resultat-phonetique">{resultat.phonetique}</div>
-              )}
+              {resultat.phonetique && <div className="resultat-phonetique">{resultat.phonetique}</div>}
             </div>
             <button
               className={`btn-ajouter ${motSauvegarde ? 'deja' : ''}`}
-              style={{ marginTop: '6px' }}
+              style={{ marginTop: 'var(--sp-2)' }}
               onClick={() => vocabulaire.ajouterMot({
                 mot: resultat.mot,
                 definition: resultat.definitions[0]?.definition || '',
                 exemple: resultat.definitions[0]?.exemple || '',
               })}
             >
-              {motSauvegarde ? '✓ Sauvé' : '+ Sauvegarder'}
+              {motSauvegarde ? 'Sauvé' : '+ Sauvegarder'}
             </button>
           </div>
 
-          <div style={{ borderTop: '1px solid var(--gris-clair)', paddingTop: '16px' }}>
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-4)' }}>
             {resultat.definitions.map((def, i) => (
               <div key={i} className="definition-item">
                 <span className="type-grammatical">{def.typeGrammatical}</span>
-                <div className="definition-texte">{def.definition}</div>
+                <div className="definition-texte"><TexteInteractif texte={def.definition} /></div>
                 {def.exemple && (
-                  <div className="definition-exemple">« {def.exemple} »</div>
+                  <div className="definition-exemple"><TexteInteractif texte={`« ${def.exemple} »`} /></div>
                 )}
                 {def.synonymes.length > 0 && (
                   <div className="synonymes">
-                    <span style={{ fontSize: '0.75rem', color: 'var(--gris)', marginRight: '4px' }}>Synonymes :</span>
+                    <span className="text-meta" style={{ marginRight: 'var(--sp-1)' }}>Synonymes :</span>
                     {def.synonymes.map((s, j) => (
                       <span key={j} className="synonyme-chip" style={{ cursor: 'pointer' }} onClick={() => { setSaisie(s); chercher(s); }}>
                         {s}
@@ -87,7 +84,7 @@ export default function Dictionnaire({ vocabulaire }) {
           </div>
 
           {resultat.definitions.length === 0 && (
-            <div style={{ color: 'var(--gris)', fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
+            <div className="text-secondary" style={{ fontStyle: 'italic', textAlign: 'center', padding: 'var(--sp-4) 0' }}>
               Aucune définition disponible pour ce mot.
             </div>
           )}
@@ -96,7 +93,6 @@ export default function Dictionnaire({ vocabulaire }) {
 
       {!resultat && !chargement && !erreur && (
         <div className="etat-vide">
-          <div className="etat-vide-icone">📖</div>
           <h3>Cherche un mot</h3>
           <p>Tape n'importe quel mot français ci-dessus pour voir sa définition.</p>
         </div>

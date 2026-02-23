@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import TexteInteractif from './TexteInteractif';
 
 const MODES = ['liste', 'flashcards', 'quiz'];
 
@@ -14,26 +15,24 @@ export default function MonVocabulaire({ vocabulaire }) {
 
   return (
     <div>
-      <h2 className="section-titre">⭐ Mon Vocabulaire</h2>
+      <h2 className="section-titre">Mon Vocabulaire</h2>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--sp-2)', marginBottom: 'var(--sp-5)' }}>
         {[
-          { label: 'Total', val: stats.total, couleur: 'var(--or)' },
-          { label: 'Nouveaux', val: stats.nouveaux, couleur: 'var(--bleu-clair)' },
-          { label: 'En cours', val: stats.enCours, couleur: '#e65c00' },
-          { label: 'Maîtrisés', val: stats.maîtrisés, couleur: 'var(--vert-succes)' },
+          { label: 'Total', val: stats.total, couleur: 'var(--accent)' },
+          { label: 'Nouveaux', val: stats.nouveaux, couleur: 'var(--primary)' },
+          { label: 'En cours', val: stats.enCours, couleur: 'var(--accent-dark)' },
+          { label: 'Maîtrisés', val: stats.maîtrisés, couleur: 'var(--success)' },
         ].map(s => (
-          <div key={s.label} className="stat-carte">
-            <span className="stat-valeur" style={{ color: s.couleur, fontSize: '1.4rem' }}>{s.val}</span>
-            <div className="stat-label">{s.label}</div>
+          <div key={s.label} className="stat-carte" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <span className="stat-valeur" style={{ color: s.couleur, fontSize: 'var(--text-xl)' }}>{s.val}</span>
+            <div className="stat-label" style={{ color: 'var(--text-tertiary)' }}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Mode navigation */}
-      <div className="filtres" style={{ marginBottom: '16px' }}>
-        {[['liste', '📋 Liste'], ['flashcards', '🃏 Flashcards'], ['quiz', '✏️ Quiz']].map(([m, label]) => (
+      <div className="filtres" style={{ marginBottom: 'var(--sp-4)' }}>
+        {[['liste', 'Liste'], ['flashcards', 'Flashcards'], ['quiz', 'Quiz']].map(([m, label]) => (
           <button key={m} className={`filtre-btn ${mode === m ? 'actif' : ''}`} onClick={() => setMode(m)}>
             {label}
           </button>
@@ -42,7 +41,6 @@ export default function MonVocabulaire({ vocabulaire }) {
 
       {mots.length === 0 ? (
         <div className="etat-vide">
-          <div className="etat-vide-icone">⭐</div>
           <h3>Aucun mot sauvegardé</h3>
           <p>Cherche des mots dans le Dictionnaire et clique "+ Sauvegarder" pour les ajouter ici.</p>
         </div>
@@ -68,26 +66,23 @@ function Liste({ mots, filtre, setFiltre, supprimerMot }) {
 
       {mots.length === 0 ? (
         <div className="etat-vide">
-          <div className="etat-vide-icone">🔍</div>
           <h3>Aucun mot dans cette catégorie</h3>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="stack-sm">
           {mots.map(m => (
-            <div key={m.id} className="carte" style={{ padding: '14px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+            <div key={m.id} className="carte" style={{ padding: 'var(--sp-4)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--sp-3)' }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'Lora, serif', fontSize: '1.05rem', fontWeight: 600, color: 'var(--bleu-nuit)' }}>
-                    {m.mot}
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--texte-clair)', marginTop: '2px' }}>{m.definition}</div>
-                  {m.exemple && <div style={{ fontSize: '0.8rem', color: 'var(--bleu-moyen)', fontStyle: 'italic', marginTop: '4px' }}>« {m.exemple} »</div>}
+                  <div className="heading-card">{m.mot}</div>
+                  <div className="text-secondary" style={{ marginTop: 2 }}><TexteInteractif texte={m.definition} /></div>
+                  {m.exemple && <div style={{ fontSize: 'var(--text-sm)', color: 'var(--primary)', fontStyle: 'italic', marginTop: 'var(--sp-1)' }}><TexteInteractif texte={`« ${m.exemple} »`} /></div>}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                  <span className={`chip-niveau chip-${m.niveau === 'maîtrisé' ? 'A1' : m.niveau === 'en_cours' ? 'A2' : 'infini'}`} style={{ fontSize: '0.65rem' }}>
-                    {m.niveau === 'maîtrisé' ? '✓ Maîtrisé' : m.niveau === 'en_cours' ? 'En cours' : 'Nouveau'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', flexShrink: 0 }}>
+                  <span className={`chip-niveau ${m.niveau === 'maîtrisé' ? 'chip-A1' : m.niveau === 'en_cours' ? 'chip-A2' : 'chip-infini'}`}>
+                    {m.niveau === 'maîtrisé' ? 'Maîtrisé' : m.niveau === 'en_cours' ? 'En cours' : 'Nouveau'}
                   </span>
-                  <button onClick={() => supprimerMot(m.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gris)', fontSize: '1rem' }}>✕</button>
+                  <button onClick={() => supprimerMot(m.id)} className="btn-ghost" style={{ fontSize: 'var(--text-base)' }}>×</button>
                 </div>
               </div>
             </div>
@@ -101,7 +96,6 @@ function Liste({ mots, filtre, setFiltre, supprimerMot }) {
 function Flashcards({ mots, mettreAJourNiveau }) {
   const [index, setIndex] = useState(0);
   const [retournee, setRetournee] = useState(false);
-  const [terminees, setTerminees] = useState([]);
 
   const motsMelangees = [...mots].sort(() => Math.random() - 0.5);
   const motActuel = motsMelangees[index % motsMelangees.length];
@@ -109,7 +103,6 @@ function Flashcards({ mots, mettreAJourNiveau }) {
   if (!motActuel || mots.length === 0) {
     return (
       <div className="etat-vide">
-        <div className="etat-vide-icone">🃏</div>
         <h3>Aucun mot à réviser</h3>
         <p>Sauvegarde des mots pour créer des flashcards.</p>
       </div>
@@ -124,7 +117,7 @@ function Flashcards({ mots, mettreAJourNiveau }) {
 
   return (
     <div>
-      <div style={{ textAlign: 'center', color: 'rgba(248,246,240,0.6)', fontSize: '0.85rem', marginBottom: '12px' }}>
+      <div className="text-secondary" style={{ textAlign: 'center', marginBottom: 'var(--sp-3)' }}>
         {(index % mots.length) + 1} / {mots.length} cartes
       </div>
 
@@ -135,23 +128,21 @@ function Flashcards({ mots, mettreAJourNiveau }) {
             <div className="flashcard-hint">Clique pour voir la définition</div>
           </div>
           <div className="flashcard-face flashcard-verso">
-            <div className="flashcard-definition">{motActuel.definition}</div>
-            {motActuel.exemple && <div className="flashcard-exemple">« {motActuel.exemple} »</div>}
+            <div className="flashcard-definition"><TexteInteractif texte={motActuel.definition} /></div>
+            {motActuel.exemple && <div className="flashcard-exemple"><TexteInteractif texte={`« ${motActuel.exemple} »`} /></div>}
           </div>
         </div>
       </div>
 
       {retournee && (
         <div className="flashcard-boutons">
-          <button className="btn-revoir" onClick={() => repondre(false)}>🔄 À réviser</button>
-          <button className="btn-connu" onClick={() => repondre(true)}>✓ Je connais</button>
+          <button className="btn-revoir" onClick={() => repondre(false)}>À réviser</button>
+          <button className="btn-connu" onClick={() => repondre(true)}>Je connais</button>
         </div>
       )}
 
       {!retournee && (
-        <div style={{ textAlign: 'center', color: 'rgba(248,246,240,0.5)', fontSize: '0.82rem' }}>
-          Clique sur la carte pour retourner
-        </div>
+        <div className="text-meta" style={{ textAlign: 'center' }}>Clique sur la carte pour retourner</div>
       )}
     </div>
   );
@@ -170,7 +161,6 @@ function Quiz({ mots, mettreAJourNiveau }) {
   if (mots.length < 3) {
     return (
       <div className="etat-vide">
-        <div className="etat-vide-icone">✏️</div>
         <h3>Pas assez de mots</h3>
         <p>Sauvegarde au moins 3 mots pour jouer au quiz.</p>
       </div>
@@ -179,15 +169,14 @@ function Quiz({ mots, mettreAJourNiveau }) {
 
   if (termine) {
     return (
-      <div className="carte" style={{ textAlign: 'center', padding: '40px 24px' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '12px' }}>{score >= total * 0.7 ? '🏆' : '📚'}</div>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: '1.4rem', color: 'var(--bleu-nuit)', marginBottom: '8px' }}>
+      <div className="carte" style={{ textAlign: 'center', padding: 'var(--sp-10) var(--sp-6)' }}>
+        <div className="heading-section" style={{ marginBottom: 'var(--sp-2)' }}>
           {score} / {total} bonnes réponses
         </div>
-        <div style={{ color: 'var(--texte-clair)', fontSize: '0.9rem', marginBottom: '24px' }}>
+        <div className="text-secondary" style={{ marginBottom: 'var(--sp-6)' }}>
           {score >= total * 0.8 ? 'Excellent ! Tu maîtrises bien ces mots.' : score >= total * 0.5 ? 'Bien ! Continue à réviser.' : 'Revois ces mots avec les flashcards.'}
         </div>
-        <button className="btn-primaire" onClick={() => { setIndexQ(0); setScore(0); setTermine(false); setReponseChoisie(null); }}>
+        <button className="btn-primaire" style={{ width: 'auto' }} onClick={() => { setIndexQ(0); setScore(0); setTermine(false); setReponseChoisie(null); }}>
           Recommencer
         </button>
       </div>
@@ -213,13 +202,15 @@ function Quiz({ mots, mettreAJourNiveau }) {
 
   return (
     <div className="carte">
-      <div style={{ fontSize: '0.8rem', color: 'var(--gris)', marginBottom: '16px' }}>
+      <div className="text-meta" style={{ marginBottom: 'var(--sp-4)' }}>
         Question {indexQ + 1} / {total} — Score : {score}
       </div>
       <div className="quiz-question">
         Quel mot correspond à cette définition ?
         <br /><br />
-        <em style={{ color: 'var(--texte-clair)', fontSize: '1rem' }}>« {question.definition} »</em>
+        <em className="text-secondary" style={{ fontSize: 'var(--text-base)' }}>
+          <TexteInteractif texte={`« ${question.definition} »`} />
+        </em>
       </div>
       <div className="quiz-options">
         {options.map((opt, i) => (

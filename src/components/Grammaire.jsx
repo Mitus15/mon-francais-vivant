@@ -1,50 +1,43 @@
 import { useState } from 'react';
 import { lecons } from '../data/grammaire';
+import TexteInteractif from './TexteInteractif';
 
 export default function Grammaire({ niveauActuel }) {
   const [leconChoisie, setLeconChoisie] = useState(null);
   const [filtre, setFiltre] = useState('tous');
-  const [reponseQuiz, setReponseQuiz] = useState({});
 
   const leconsFiltrees = filtre === 'tous' ? lecons : lecons.filter(l => l.niveau === filtre);
 
   if (leconChoisie) {
-    return <DetailLecon lecon={leconChoisie} retour={() => { setLeconChoisie(null); setReponseQuiz({}); }} />;
+    return <DetailLecon lecon={leconChoisie} retour={() => setLeconChoisie(null)} />;
   }
 
   return (
     <div>
-      <h2 className="section-titre">📚 Grammaire</h2>
+      <h2 className="section-titre">Grammaire</h2>
       <p className="section-intro">
         La grammaire est le squelette du français. Chaque leçon explique une règle avec des exemples clairs et un exercice pratique.
       </p>
 
       <div className="filtres">
-        {[['tous', 'Tous les niveaux'], ['A1', '🌱 A1 Débutant'], ['A2', '🌿 A2 Intermédiaire'], ['B1', '🌳 B1 Avancé']].map(([f, l]) => (
+        {[['tous', 'Tous les niveaux'], ['A1', 'A1 Débutant'], ['A2', 'A2 Intermédiaire'], ['B1', 'B1 Avancé']].map(([f, l]) => (
           <button key={f} className={`filtre-btn ${filtre === f ? 'actif' : ''}`} onClick={() => setFiltre(f)}>{l}</button>
         ))}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="stack">
         {leconsFiltrees.map((lecon) => (
-          <div
-            key={lecon.id}
-            className="expression-carte"
-            onClick={() => setLeconChoisie(lecon)}
-            style={{ cursor: 'pointer' }}
-          >
+          <div key={lecon.id} className="expression-carte carte-clickable" onClick={() => setLeconChoisie(lecon)}>
             <div className="expression-en-tete">
               <div>
-                <div style={{ fontFamily: 'Lora, serif', fontSize: '1rem', fontWeight: 600, color: 'var(--bleu-nuit)' }}>
-                  {lecon.titre}
-                </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--texte-clair)', marginTop: '4px' }}>
+                <div className="heading-card">{lecon.titre}</div>
+                <div className="text-secondary" style={{ marginTop: 'var(--sp-1)' }}>
                   {lecon.categorie} — {lecon.sections?.length || 0} section{(lecon.sections?.length || 0) > 1 ? 's' : ''} + exercice{lecon.exercices?.length > 1 ? 's' : ''}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
                 <span className={`chip-niveau chip-${lecon.niveau}`}>{lecon.niveau}</span>
-                <span style={{ color: 'var(--or)', fontSize: '1rem' }}>→</span>
+                <span style={{ color: 'var(--primary)', fontSize: 'var(--text-base)' }}>→</span>
               </div>
             </div>
           </div>
@@ -64,41 +57,34 @@ function DetailLecon({ lecon, retour }) {
 
   return (
     <div>
-      <button
-        onClick={retour}
-        style={{ background: 'none', border: 'none', color: 'var(--or)', cursor: 'pointer', fontSize: '0.9rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}
-      >
-        ← Retour aux leçons
-      </button>
+      <button onClick={retour} className="btn-retour">← Retour aux leçons</button>
 
       <div className="carte">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', marginBottom: 'var(--sp-4)' }}>
           <span className={`chip-niveau chip-${lecon.niveau}`}>{lecon.niveau}</span>
-          <div style={{ fontFamily: 'Lora, serif', fontSize: '1.3rem', fontWeight: 600, color: 'var(--bleu-nuit)' }}>
-            {lecon.titre}
-          </div>
+          <div className="heading-section" style={{ marginBottom: 0 }}>{lecon.titre}</div>
         </div>
 
         <div className="section-regle">
           <h3>Introduction</h3>
-          <p>{lecon.introduction}</p>
+          <p><TexteInteractif texte={lecon.introduction} /></p>
         </div>
 
         {lecon.sections?.map((section, si) => (
-          <div key={si} style={{ marginBottom: '24px' }}>
-            <div style={{ fontFamily: 'Lora, serif', fontWeight: 600, color: 'var(--bleu-nuit)', fontSize: '1rem', marginBottom: '12px', borderBottom: '2px solid var(--or-pale)', paddingBottom: '8px' }}>
+          <div key={si} style={{ marginBottom: 'var(--sp-6)' }}>
+            <div className="heading-card" style={{ marginBottom: 'var(--sp-3)', borderBottom: '2px solid var(--accent-light)', paddingBottom: 'var(--sp-2)' }}>
               {section.sous_titre}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="stack">
               {section.regles.map((r, ri) => (
-                <div key={ri} style={{ background: 'var(--blanc-casse)', borderRadius: 'var(--radius)', padding: '14px', border: '1px solid var(--gris-clair)' }}>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    <div style={{ background: 'var(--or)', color: 'var(--bleu-nuit)', borderRadius: '8px', padding: '4px 10px', fontFamily: 'Lora, serif', fontWeight: 700, fontSize: '1rem', flexShrink: 0 }}>
+                <div key={ri} style={{ background: 'var(--surface-alt)', borderRadius: 'var(--radius)', padding: 'var(--sp-4)', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start' }}>
+                    <div style={{ background: 'var(--primary)', color: 'white', borderRadius: 'var(--radius)', padding: 'var(--sp-1) var(--sp-3)', fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 700, flexShrink: 0 }}>
                       {r.regle}
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--texte-clair)', marginBottom: '4px' }}>{r.usage}</div>
-                      <div style={{ fontStyle: 'italic', color: 'var(--bleu-moyen)', fontSize: '0.88rem' }}>Ex : {r.exemple}</div>
+                      <div className="text-secondary" style={{ marginBottom: 'var(--sp-1)' }}><TexteInteractif texte={r.usage} /></div>
+                      <div style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: 'var(--text-sm)' }}>Ex : <TexteInteractif texte={r.exemple} /></div>
                     </div>
                   </div>
                 </div>
@@ -107,15 +93,14 @@ function DetailLecon({ lecon, retour }) {
           </div>
         ))}
 
-        {/* Exercices */}
         {lecon.exercices && lecon.exercices.length > 0 && (
           <div>
-            <div style={{ fontFamily: 'Lora, serif', fontWeight: 600, color: 'var(--bleu-nuit)', fontSize: '1rem', marginBottom: '12px', borderBottom: '2px solid var(--or-pale)', paddingBottom: '8px' }}>
-              ✏️ Exercices
+            <div className="heading-card" style={{ marginBottom: 'var(--sp-3)', borderBottom: '2px solid var(--accent-light)', paddingBottom: 'var(--sp-2)' }}>
+              Exercices
             </div>
             {lecon.exercices.map((ex, qi) => (
-              <div key={qi} style={{ marginBottom: '20px' }}>
-                <div className="quiz-question" style={{ fontSize: '1rem' }}>{ex.question}</div>
+              <div key={qi} style={{ marginBottom: 'var(--sp-5)' }}>
+                <div className="quiz-question">{ex.question}</div>
                 {ex.options ? (
                   <div className="quiz-options">
                     {ex.options.map((opt, oi) => (
@@ -130,9 +115,9 @@ function DetailLecon({ lecon, retour }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ background: 'var(--or-pale)', borderRadius: 'var(--radius)', padding: '12px 16px' }}>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--gris)', marginBottom: '4px' }}>Réponse :</div>
-                    <div style={{ fontFamily: 'Lora, serif', color: 'var(--bleu-nuit)', fontWeight: 600 }}>{ex.reponse}</div>
+                  <div className="tip-box">
+                    <div className="text-meta" style={{ marginBottom: 'var(--sp-1)' }}>Réponse :</div>
+                    <div className="heading-card">{ex.reponse}</div>
                   </div>
                 )}
               </div>
