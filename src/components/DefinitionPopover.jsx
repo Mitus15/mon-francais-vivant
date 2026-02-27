@@ -55,6 +55,28 @@ export default function DefinitionPopover() {
               </div>
             )}
 
+            {definition.synonymes?.length > 0 && (
+              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' }}>
+                <span className="text-meta" style={{ fontSize: 'var(--text-xs)' }}>Syn :</span>
+                {definition.synonymes.slice(0, 3).map((s, i) => (
+                  <span key={i} className="synonyme-chip" style={{ fontSize: 'var(--text-xs)', padding: '2px 6px' }}>
+                    {typeof s === 'string' ? s : s.mot}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {definition.antonymes?.length > 0 && (
+              <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' }}>
+                <span className="text-meta" style={{ fontSize: 'var(--text-xs)' }}>Ant :</span>
+                {definition.antonymes.slice(0, 3).map((a, i) => (
+                  <span key={i} className="synonyme-chip" style={{ fontSize: 'var(--text-xs)', padding: '2px 6px', borderColor: 'var(--error)' }}>
+                    {typeof a === 'string' ? a : a.mot}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button className="btn-ajouter" onClick={sauvegarder}>
                 Sauvegarder

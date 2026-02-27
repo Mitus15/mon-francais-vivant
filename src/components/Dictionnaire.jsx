@@ -206,14 +206,39 @@ export default function Dictionnaire({ vocabulaire }) {
               </div>
             )}
 
-            {resultat.synonymes && resultat.synonymes.length > 0 && resultat.synonymes[0] !== '' && (
-              <div className="synonymes" style={{ marginTop: 'var(--sp-3)' }}>
-                <span className="text-meta" style={{ marginRight: 'var(--sp-1)' }}>Synonymes :</span>
-                {resultat.synonymes.map((s, j) => (
-                  <span key={j} className="synonyme-chip" style={{ cursor: 'pointer' }} onClick={() => ouvrirMot(s)}>
-                    {s}
-                  </span>
-                ))}
+            {resultat.synonymes?.length > 0 && (
+              <div className="relations-section" style={{ marginTop: 'var(--sp-4)' }}>
+                <div className="text-meta" style={{ marginBottom: 'var(--sp-2)', fontWeight: 600 }}>Synonymes</div>
+                <div className="relations-liste">
+                  {resultat.synonymes.map((s, j) => {
+                    const mot = typeof s === 'string' ? s : s.mot;
+                    const def = typeof s === 'string' ? null : s.definition;
+                    return (
+                      <button key={j} className="relation-carte" onClick={() => ouvrirMot(mot)}>
+                        <span className="relation-mot">{mot}</span>
+                        {def && <span className="relation-definition">{def.length > 80 ? def.slice(0, 80) + '...' : def}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {resultat.antonymes?.length > 0 && (
+              <div className="relations-section" style={{ marginTop: 'var(--sp-3)' }}>
+                <div className="text-meta" style={{ marginBottom: 'var(--sp-2)', fontWeight: 600 }}>Antonymes</div>
+                <div className="relations-liste">
+                  {resultat.antonymes.map((a, j) => {
+                    const mot = typeof a === 'string' ? a : a.mot;
+                    const def = typeof a === 'string' ? null : a.definition;
+                    return (
+                      <button key={j} className="relation-carte relation-antonyme" onClick={() => ouvrirMot(mot)}>
+                        <span className="relation-mot">{mot}</span>
+                        {def && <span className="relation-definition">{def.length > 80 ? def.slice(0, 80) + '...' : def}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

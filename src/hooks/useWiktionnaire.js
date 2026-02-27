@@ -39,6 +39,8 @@ export function useWiktionnaire() {
               type: data.type || '',
             }))
           : [],
+        synonymes: data.synonymes || [],
+        antonymes: data.antonymes || [],
       };
 
       cache.set(motNorm, resultat);
